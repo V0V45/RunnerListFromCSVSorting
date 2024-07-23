@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class CreatorApplication {
 
 	public static void main(String[] args) {
+		// TODO: Прицепить Spring, тесты написать
 		try {
 			ArrayList<Runner> test = ResultsProcessor.getFastestRunners("base.csv", 3, 10, 'М');
 			ResultsProcessor.printRunners(test);
