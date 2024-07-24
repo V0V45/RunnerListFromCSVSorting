@@ -6,33 +6,38 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
+// Класс, реализующий методы работы над списком бегунов
 public class ResultsProcessor {
+    // Метод, позволяющий прочитать CSV файл и его содержимое преобразовать в объекты класса Runner
     private static ArrayList<Runner> convertCSVtoRunnersArray(String csvFilePath) throws IOException {
-        ArrayList<Runner> runners = new ArrayList<Runner>();
-        BufferedReader br = new BufferedReader(new FileReader(csvFilePath));
-        String currentLine = br.readLine();
-        while (currentLine != null) {
-            String[] words = currentLine.split(";");
-            String currentSurname = words[0];
-            String currentName = words[1];
-            char currentGender = words[2].charAt(0);
-            int currentDistance = Integer.parseInt((words[3].split(" "))[0]);
-            String[] currentTimeArray = words[4].split(":");
-            int currentTimeMinutes = Integer.parseInt(currentTimeArray[0]);
-            int currentTimeSeconds = Integer.parseInt(currentTimeArray[1]);
-            int currentTime = (currentTimeMinutes * 60) + currentTimeSeconds;
-            Runner currentRunner = new Runner(currentSurname, currentName, currentGender, currentDistance, currentTime);
-            runners.add(currentRunner);
-            currentLine = br.readLine();
+        ArrayList<Runner> runners = new ArrayList<Runner>(); // создаем пустой массив с бегунами
+        BufferedReader br = new BufferedReader(new FileReader(csvFilePath)); // создаем BufferedReader для чтения файла CSV
+        String currentLine = br.readLine(); // построчно читаем файл и передаем данные в переменную currentLine
+        while (currentLine != null) { // пока текущая строка не станет пустой
+            String[] words = currentLine.split(";"); // создаем массив, разбивающий строку из файла CSV на слова. Разделитель - точка с запятой
+            String currentSurname = words[0]; // фамилия есть первое слово в строке
+            String currentName = words[1]; // имя есть второе слово в строке
+            char currentGender = words[2].charAt(0); // пол есть третье слово в строке. Переводим в char с помощью charAt
+            int currentDistance = Integer.parseInt((words[3].split(" "))[0]); // дистанция есть четвертое слово в строке
+            String[] currentTimeArray = words[4].split(":"); // время нужно правильно перевести, поэтому создаем еще один массив,
+            // который представляет собой два слова, разделенных двоеточием (по сути, минуты и секунды)
+            int currentTimeMinutes = Integer.parseInt(currentTimeArray[0]); // минуты есть первое слово
+            int currentTimeSeconds = Integer.parseInt(currentTimeArray[1]); // секунды есть второе слово
+            int currentTime = (currentTimeMinutes * 60) + currentTimeSeconds; // переводим время полностью в секунды
+            Runner currentRunner = new Runner(currentSurname, currentName, currentGender, currentDistance, currentTime); // создаем объект бегуна
+            runners.add(currentRunner); // добавляем бегуна в общий массив
+            currentLine = br.readLine(); // переходим к следующей строчке файла CSV
         }
-        br.close();
-        return runners;
+        br.close(); // по окончанию цикла закрываем BufferedReader
+        return runners; // возвращаем массив с бегунами как результат работы метода
     }
 
+    // Метод, позволяющий сортировать бегунов в массиве от самого быстрого к самому медленному
     private static void sortRunnersByFastestOnes(ArrayList<Runner> runnersList) {
         Collections.sort(runnersList);
     }
 
+    // Метод, позволяющий оставить в массиве бегунов только один указанный пол
     private static void setGender(ArrayList<Runner> runnersList, char gender) {
         if (gender == 'М' || gender == 'Ж') {
             for (int i = 0; i < runnersList.size(); i++) {
@@ -47,6 +52,7 @@ public class ResultsProcessor {
         }
     }
 
+    // Метод, позволяющий оставить в массиве бегунов только одну указанную дистанцию
     private static void setDistance(ArrayList<Runner> runnersList, int distance) {
         if (distance == 5 || distance == 10) {
             for (int i = 0; i < runnersList.size(); i++) {
@@ -61,6 +67,7 @@ public class ResultsProcessor {
         }
     }
 
+    // Метод, позволяющий сократить массив бегунов до заданной величины
     private static void cutListToLength(ArrayList<Runner> runnersList, int targetRunnersNumber) {
         if (targetRunnersNumber >= runnersList.size()) {
             throw new IllegalArgumentException("Нельзя удалить бегунов больше, чем их всего");
@@ -69,12 +76,14 @@ public class ResultsProcessor {
         }
     }
 
+    // Метод, позволяющий вывести массив бегунов в консоль
     public static void printRunners(ArrayList<Runner> runnersList) {
         for (Runner runner : runnersList) {
             System.out.println(runner.toString());
         }
     }
 
+    // Метод, преобразующий CSV-файл в отсортированные результаты по количеству бегунов и дистанции
     public static ArrayList<Runner> getFastestRunners(String csvFilePath, int targetRunnersNumber, int targetDistance) throws IOException {
         ArrayList<Runner> runners = ResultsProcessor.convertCSVtoRunnersArray(csvFilePath);
         ResultsProcessor.setDistance(runners, targetDistance);
@@ -83,6 +92,7 @@ public class ResultsProcessor {
         return runners;
     }
 
+    // Метод, преобразующий CSV-файл в отсортированные результаты по количеству бегунов и полу
     public static ArrayList<Runner> getFastestRunners(String csvFilePath, int targetRunnersNumber, char targetGender) throws IOException {
         ArrayList<Runner> runners = ResultsProcessor.convertCSVtoRunnersArray(csvFilePath);
         ResultsProcessor.setGender(runners, targetGender);
@@ -91,6 +101,7 @@ public class ResultsProcessor {
         return runners;
     }
 
+    // Метод, преобразующий CSV-файл в отсортированные результаты по количеству бегунов, дистанции и полу
     public static ArrayList<Runner> getFastestRunners(String csvFilePath, int targetRunnersNumber, int targetDistance, char targetGender) throws IOException {
         ArrayList<Runner> runners = ResultsProcessor.convertCSVtoRunnersArray(csvFilePath);
         ResultsProcessor.setGender(runners, targetGender);
