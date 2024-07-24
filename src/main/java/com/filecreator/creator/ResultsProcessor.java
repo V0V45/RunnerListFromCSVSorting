@@ -25,6 +25,7 @@ public class ResultsProcessor {
             runners.add(currentRunner);
             currentLine = br.readLine();
         }
+        br.close();
         return runners;
     }
 
