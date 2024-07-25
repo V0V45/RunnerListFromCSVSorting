@@ -5,28 +5,82 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
 import jakarta.annotation.PostConstruct;
 
 // Класс, реализующий методы работы над списком бегунов
+// Объект класса ResultsProccesor содержит в себе информацию о сортировке списка
 public class ResultsProcessor {
-    // Метод, запускающийся автоматически после создания объекта класса
-    @PostConstruct
-    public void init() {
-        try {
-            ArrayList<Runner> test = getFastestRunners("base.csv", 5, 10, 'М');
-            printRunners(test);
-        } catch (IOException e) {
-            e.getMessage();
-            e.printStackTrace();
+    // Поля
+    private String targetCSVFilePath;
+    private char targetGender;
+    private int targetDistance;
+
+    // Конструктор
+    public ResultsProcessor(String targetCSVFilePath) {
+        this.targetCSVFilePath = targetCSVFilePath;
+    }
+
+    // Геттеры
+    public String getTargetCSVFilePath() {
+        return this.targetCSVFilePath;
+    }
+
+    public char getTargetGender() {
+        return this.targetGender;
+    }
+
+    public int getTargetDistance() {
+        return this.targetDistance;
+    }
+
+    // Сеттеры
+    public void setTargetCSVFilePath(String targetCSVFilePath) {
+        this.targetCSVFilePath = targetCSVFilePath;
+    }
+
+    public void setTargetGender(char targetGender) {
+        if (targetGender == 'М' || targetGender == 'Ж') {
+            this.targetGender = targetGender;
+        } else {
+            throw new IllegalArgumentException("Пол может быть только М или Ж!");
         }
     }
 
+    public void setTargetDistance(int targetDistance) {
+        if (targetDistance == 5 || targetDistance == 10) {
+            this.targetDistance = targetDistance;
+        } else {
+            throw new IllegalArgumentException("Дистанция может быть только 5 или 10 км!");
+        }
+    }
+
+    // Методы
+    // Метод, запускающийся автоматически после создания объекта класса, по своей сути
+    // главный поток программы
+    // @PostConstruct
+    // public void init() {
+	// 	AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ApplicationContext.class);
+    //     try {
+	// 		ResultsProcessor processor = context.getBean(ResultsProcessor.class);
+    //         ArrayList<Runner> testList = processor.getFastestRunnersByGenderAndDistance(5);
+    //         processor.printRunners(testList);
+    //     } catch (IOException e) {
+    //         e.getMessage();
+    //         e.printStackTrace();
+    //     }
+	// 	context.close();
+    // }
+
     // Метод, позволяющий прочитать CSV файл и его содержимое преобразовать в
     // объекты класса Runner
-    private ArrayList<Runner> convertCSVtoRunnersArray(String csvFilePath) throws IOException {
+    private ArrayList<Runner> convertCSVtoRunnersArray() throws IOException {
         ArrayList<Runner> runners = new ArrayList<Runner>(); // создаем пустой массив с бегунами
-        BufferedReader br = new BufferedReader(new FileReader(csvFilePath)); // создаем BufferedReader для чтения файла
-                                                                             // CSV
+        BufferedReader br = new BufferedReader(new FileReader(this.targetCSVFilePath)); // создаем BufferedReader для
+                                                                                        // чтения файла
+        // CSV
         String currentLine = br.readLine(); // построчно читаем файл и передаем данные в переменную currentLine
         while (currentLine != null) { // пока текущая строка не станет пустой
             String[] words = currentLine.split(";"); // создаем массив, разбивающий строку из файла CSV на слова.
@@ -60,32 +114,32 @@ public class ResultsProcessor {
     }
 
     // Метод, позволяющий оставить в массиве бегунов только один указанный пол
-    private void setGender(ArrayList<Runner> runnersList, char gender) {
-        if (gender == 'М' || gender == 'Ж') {
+    private void sortByGender(ArrayList<Runner> runnersList) {
+        if (this.targetGender != '\u0000') {
             for (int i = 0; i < runnersList.size(); i++) {
-                if (runnersList.get(i).getGender() != gender) {
+                if (runnersList.get(i).getGender() != this.targetGender) {
                     runnersList.remove(i);
                 } else {
                     continue;
                 }
             }
         } else {
-            throw new IllegalArgumentException("Пол может быть только М или Ж");
+            throw new IllegalArgumentException("Пол не задан через сеттер!");
         }
     }
 
     // Метод, позволяющий оставить в массиве бегунов только одну указанную дистанцию
-    private void setDistance(ArrayList<Runner> runnersList, int distance) {
-        if (distance == 5 || distance == 10) {
+    private void sortByDistance(ArrayList<Runner> runnersList) {
+        if (this.targetDistance != 0) {
             for (int i = 0; i < runnersList.size(); i++) {
-                if (runnersList.get(i).getDistance() != distance) {
+                if (runnersList.get(i).getDistance() != this.targetDistance) {
                     runnersList.remove(i);
                 } else {
                     continue;
                 }
             }
         } else {
-            throw new IllegalArgumentException("Дистанция может быть только 5 или 10 км");
+            throw new IllegalArgumentException("Дистанция не задана через сеттер!");
         }
     }
 
@@ -106,34 +160,34 @@ public class ResultsProcessor {
     }
 
     // Метод, преобразующий CSV-файл в отсортированные результаты по количеству
-    // бегунов и дистанции
-    public ArrayList<Runner> getFastestRunners(String csvFilePath, int targetRunnersNumber, int targetDistance)
+    // бегунов и дистанции. Через сеттер должно быть задано поле targetDistance
+    public ArrayList<Runner> getFastestRunnersByDistance(int targetRunnersNumber)
             throws IOException {
-        ArrayList<Runner> runners = convertCSVtoRunnersArray(csvFilePath);
-        setDistance(runners, targetDistance);
+        ArrayList<Runner> runners = convertCSVtoRunnersArray();
+        sortByDistance(runners);
         sortRunnersByFastestOnes(runners);
         cutListToLength(runners, targetRunnersNumber);
         return runners;
     }
 
     // Метод, преобразующий CSV-файл в отсортированные результаты по количеству
-    // бегунов и полу
-    public ArrayList<Runner> getFastestRunners(String csvFilePath, int targetRunnersNumber, char targetGender)
+    // бегунов и полу. Через сеттер должно быть задано поле targetGender
+    public ArrayList<Runner> getFastestRunnersByGender(int targetRunnersNumber)
             throws IOException {
-        ArrayList<Runner> runners = convertCSVtoRunnersArray(csvFilePath);
-        setGender(runners, targetGender);
+        ArrayList<Runner> runners = convertCSVtoRunnersArray();
+        sortByGender(runners);
         sortRunnersByFastestOnes(runners);
         cutListToLength(runners, targetRunnersNumber);
         return runners;
     }
 
     // Метод, преобразующий CSV-файл в отсортированные результаты по количеству
-    // бегунов, дистанции и полу
-    public ArrayList<Runner> getFastestRunners(String csvFilePath, int targetRunnersNumber, int targetDistance,
-            char targetGender) throws IOException {
-        ArrayList<Runner> runners = convertCSVtoRunnersArray(csvFilePath);
-        setGender(runners, targetGender);
-        setDistance(runners, targetDistance);
+    // бегунов, дистанции и полу. Через сеттер должны быть заданы поля targetGender
+    // и targetDistance!
+    public ArrayList<Runner> getFastestRunnersByGenderAndDistance(int targetRunnersNumber) throws IOException {
+        ArrayList<Runner> runners = convertCSVtoRunnersArray();
+        sortByDistance(runners);
+        sortByGender(runners);
         sortRunnersByFastestOnes(runners);
         cutListToLength(runners, targetRunnersNumber);
         return runners;
