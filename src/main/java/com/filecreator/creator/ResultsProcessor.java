@@ -6,12 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
-import jakarta.annotation.PostConstruct;
-
 // Класс, реализующий методы работы над списком бегунов
-// Объект класса ResultsProccesor содержит в себе информацию о сортировке списка
+// Объект класса ResultsProcessor содержит в себе информацию о сортировке списка
 public class ResultsProcessor {
     // Поля
     private String targetCSVFilePath;
@@ -58,22 +54,6 @@ public class ResultsProcessor {
     }
 
     // Методы
-    // Метод, запускающийся автоматически после создания объекта класса, по своей сути
-    // главный поток программы
-    // @PostConstruct
-    // public void init() {
-	// 	AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ApplicationContext.class);
-    //     try {
-	// 		ResultsProcessor processor = context.getBean(ResultsProcessor.class);
-    //         ArrayList<Runner> testList = processor.getFastestRunnersByGenderAndDistance(5);
-    //         processor.printRunners(testList);
-    //     } catch (IOException e) {
-    //         e.getMessage();
-    //         e.printStackTrace();
-    //     }
-	// 	context.close();
-    // }
-
     // Метод, позволяющий прочитать CSV файл и его содержимое преобразовать в
     // объекты класса Runner
     private ArrayList<Runner> convertCSVtoRunnersArray() throws IOException {
@@ -119,6 +99,7 @@ public class ResultsProcessor {
             for (int i = 0; i < runnersList.size(); i++) {
                 if (runnersList.get(i).getGender() != this.targetGender) {
                     runnersList.remove(i);
+                    i = 0;
                 } else {
                     continue;
                 }
@@ -134,6 +115,7 @@ public class ResultsProcessor {
             for (int i = 0; i < runnersList.size(); i++) {
                 if (runnersList.get(i).getDistance() != this.targetDistance) {
                     runnersList.remove(i);
+                    i = 0;
                 } else {
                     continue;
                 }
@@ -192,4 +174,14 @@ public class ResultsProcessor {
         cutListToLength(runners, targetRunnersNumber);
         return runners;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+            " targetCSVFilePath='" + getTargetCSVFilePath() + "'" +
+            ", targetGender='" + getTargetGender() + "'" +
+            ", targetDistance='" + getTargetDistance() + "'" +
+            "}";
+    }
+
 }
