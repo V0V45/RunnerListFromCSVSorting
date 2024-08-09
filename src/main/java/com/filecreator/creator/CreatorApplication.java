@@ -1,6 +1,5 @@
 package com.filecreator.creator;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,7 +11,7 @@ public class CreatorApplication {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ApplicationContext.class);
         try {
 			ResultsProcessor processor = context.getBean(ResultsProcessor.class);
-            ArrayList<Runner> testList = processor.getFastestRunnersByGenderAndDistance(10);
+            ArrayList<Runner> testList = processor.getFastestRunnersByGenderAndDistance(5);
             processor.printRunners(testList);
         } catch (IOException e) {
             e.getMessage();
